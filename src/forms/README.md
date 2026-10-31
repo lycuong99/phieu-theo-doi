@@ -97,3 +97,12 @@ quản lý kho; danh sách tên là dependency từ caller.
 
 `demo-orders.html` dùng cùng component với dữ liệu minh họa, giữ riêng state
 trong bộ nhớ và không nối services của ứng dụng.
+
+## Trang thư viện mẫu
+
+`TemplateLibraryPage` quản lý tìm/lọc, chọn mẫu, xem trước và bản nháp chỉnh sửa
+ở route `/khoa/$workspaceKey/thu-vien-mau`. Module nhận thư viện và callback cập
+nhật từ workspace; không tạo storage hoặc gọi Convex riêng. Khi lưu, cập nhật
+qua cùng luồng tự lưu/revision của đợt điều trị. Bản nháp chưa lưu chặn chuyển
+trang/Khoa và cảnh báo khi tải lại; mẫu bị đổi ở nơi khác không được ghi đè.
+`lib/templates.ts` giữ quy tắc tìm không dấu dùng chung với hộp chọn mẫu nhanh.

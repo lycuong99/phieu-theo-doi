@@ -15,6 +15,7 @@ import { Route as CareDefaultsRouteImport } from './routes/care-defaults'
 import { Route as KhoaWorkspaceKeyIndexRouteImport } from './routes/khoa.$workspaceKey.index'
 import { Route as KhoaWorkspaceKeyCareDefaultsRouteImport } from './routes/khoa.$workspaceKey.care-defaults'
 import { Route as KhoaWorkspaceKeyCauHinhRouteImport } from './routes/khoa.$workspaceKey.cau-hinh'
+import { Route as KhoaWorkspaceKeyThuVienMauRouteImport } from './routes/khoa.$workspaceKey.thu-vien-mau'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -47,6 +48,12 @@ const KhoaWorkspaceKeyCauHinhRoute = KhoaWorkspaceKeyCauHinhRouteImport.update({
   path: '/khoa/$workspaceKey/cau-hinh',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KhoaWorkspaceKeyThuVienMauRoute =
+  KhoaWorkspaceKeyThuVienMauRouteImport.update({
+    id: '/khoa/$workspaceKey/thu-vien-mau',
+    path: '/khoa/$workspaceKey/thu-vien-mau',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByFullPath {
   '/care-defaults': typeof CareDefaultsRoute
   '/khoa/$workspaceKey/care-defaults': typeof KhoaWorkspaceKeyCareDefaultsRoute
   '/khoa/$workspaceKey/cau-hinh': typeof KhoaWorkspaceKeyCauHinhRoute
+  '/khoa/$workspaceKey/thu-vien-mau': typeof KhoaWorkspaceKeyThuVienMauRoute
   '/khoa/$workspaceKey/': typeof KhoaWorkspaceKeyIndexRoute
 }
 export interface FileRoutesByTo {
@@ -62,6 +70,7 @@ export interface FileRoutesByTo {
   '/care-defaults': typeof CareDefaultsRoute
   '/khoa/$workspaceKey/care-defaults': typeof KhoaWorkspaceKeyCareDefaultsRoute
   '/khoa/$workspaceKey/cau-hinh': typeof KhoaWorkspaceKeyCauHinhRoute
+  '/khoa/$workspaceKey/thu-vien-mau': typeof KhoaWorkspaceKeyThuVienMauRoute
   '/khoa/$workspaceKey': typeof KhoaWorkspaceKeyIndexRoute
 }
 export interface FileRoutesById {
@@ -71,6 +80,7 @@ export interface FileRoutesById {
   '/care-defaults': typeof CareDefaultsRoute
   '/khoa/$workspaceKey/care-defaults': typeof KhoaWorkspaceKeyCareDefaultsRoute
   '/khoa/$workspaceKey/cau-hinh': typeof KhoaWorkspaceKeyCauHinhRoute
+  '/khoa/$workspaceKey/thu-vien-mau': typeof KhoaWorkspaceKeyThuVienMauRoute
   '/khoa/$workspaceKey/': typeof KhoaWorkspaceKeyIndexRoute
 }
 export interface FileRouteTypes {
@@ -81,6 +91,7 @@ export interface FileRouteTypes {
     | '/care-defaults'
     | '/khoa/$workspaceKey/care-defaults'
     | '/khoa/$workspaceKey/cau-hinh'
+    | '/khoa/$workspaceKey/thu-vien-mau'
     | '/khoa/$workspaceKey/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -89,6 +100,7 @@ export interface FileRouteTypes {
     | '/care-defaults'
     | '/khoa/$workspaceKey/care-defaults'
     | '/khoa/$workspaceKey/cau-hinh'
+    | '/khoa/$workspaceKey/thu-vien-mau'
     | '/khoa/$workspaceKey'
   id:
     | '__root__'
@@ -97,6 +109,7 @@ export interface FileRouteTypes {
     | '/care-defaults'
     | '/khoa/$workspaceKey/care-defaults'
     | '/khoa/$workspaceKey/cau-hinh'
+    | '/khoa/$workspaceKey/thu-vien-mau'
     | '/khoa/$workspaceKey/'
   fileRoutesById: FileRoutesById
 }
@@ -106,6 +119,7 @@ export interface RootRouteChildren {
   CareDefaultsRoute: typeof CareDefaultsRoute
   KhoaWorkspaceKeyCareDefaultsRoute: typeof KhoaWorkspaceKeyCareDefaultsRoute
   KhoaWorkspaceKeyCauHinhRoute: typeof KhoaWorkspaceKeyCauHinhRoute
+  KhoaWorkspaceKeyThuVienMauRoute: typeof KhoaWorkspaceKeyThuVienMauRoute
   KhoaWorkspaceKeyIndexRoute: typeof KhoaWorkspaceKeyIndexRoute
 }
 
@@ -153,6 +167,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KhoaWorkspaceKeyCauHinhRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/khoa/$workspaceKey/thu-vien-mau': {
+      id: '/khoa/$workspaceKey/thu-vien-mau'
+      path: '/khoa/$workspaceKey/thu-vien-mau'
+      fullPath: '/khoa/$workspaceKey/thu-vien-mau'
+      preLoaderRoute: typeof KhoaWorkspaceKeyThuVienMauRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -162,6 +183,7 @@ const rootRouteChildren: RootRouteChildren = {
   CareDefaultsRoute: CareDefaultsRoute,
   KhoaWorkspaceKeyCareDefaultsRoute: KhoaWorkspaceKeyCareDefaultsRoute,
   KhoaWorkspaceKeyCauHinhRoute: KhoaWorkspaceKeyCauHinhRoute,
+  KhoaWorkspaceKeyThuVienMauRoute: KhoaWorkspaceKeyThuVienMauRoute,
   KhoaWorkspaceKeyIndexRoute: KhoaWorkspaceKeyIndexRoute,
 }
 export const routeTree = rootRouteImport

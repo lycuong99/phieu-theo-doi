@@ -1,3 +1,4 @@
+import { Button } from './ui/button';
 import { resolveWorkspace } from '../services/workspaces/model';
 import { useBlocker, useNavigate, useRouterState } from '@tanstack/react-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -82,7 +83,7 @@ export function WorkspaceBoundary({ children }: {
     {workspaceStorage === 'local' && <p className="text-sm text-muted-foreground">Đang lưu trên thiết bị này. Danh sách Khoa và dữ liệu chưa đồng bộ sang thiết bị khác.</p>}
   </main>;
   return <>
-    {error && <div role="alert" className="fixed bottom-4 right-4 z-50 max-w-sm rounded-lg border bg-white p-4 text-sm text-destructive">{error}</div>}
+    {error && <div role="alert" className="fixed bottom-4 right-4 z-50 max-w-sm rounded-lg border bg-white p-4 text-sm text-destructive"><span>{error}</span><Button variant="ghost" size="sm" aria-label="Đóng thông báo" onClick={() => setError('')}>Đóng</Button></div>}
     <TreatmentServicesProvider key={current.key} workspaceKey={current.key}>
       {children(current, () => { setOpen(true); void reload(); }, registerGuard, next => { if(current.slug) aliases.current.set(current.slug,current.key); setCurrent(next); setItems(items => items.map(item => item.key === next.key ? next : item)); })}
     </TreatmentServicesProvider>

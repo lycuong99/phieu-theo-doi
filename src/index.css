@@ -53,7 +53,7 @@
 /* Compact structured treatment orders, shared by the sheet and isolated demo. */
 .treatment-orders { min-width: 0; container-type: inline-size; }
 .orders-lines { min-height: 320px; max-height: 600px; overflow: auto; padding-bottom: 8px; border-top: 1px solid var(--input); }
-.orders-list-heading, .orders-entry { display: grid; grid-template-columns: 44px minmax(0,1fr); gap: 12px; }
+.orders-list-heading, .orders-entry { display: grid; grid-template-columns: 44px minmax(0,1fr) 32px; gap: 8px; }
 .orders-list-heading { position: sticky; top: 0; z-index: 1; align-items: center; padding: 8px 0; background: var(--card); border-bottom: 1px solid var(--input); color: var(--muted-foreground); font-size: 11px; font-weight: 500; }
 .orders-list-heading > :first-child { text-align: center; }
 .orders-entry { padding: 8px 0; border-bottom: 1px solid color-mix(in srgb, var(--input) 70%, var(--card)); }
@@ -62,6 +62,8 @@
 .orders-sequence-button { align-self: start; width: 44px; min-height: 28px; padding: 1px 4px; border: 0; border-radius: 4px; background: transparent; color: var(--muted-foreground); font: inherit; font-size: 14px; line-height: 1.8; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; cursor: pointer; }
 .orders-sequence-button:hover { background: var(--muted); color: var(--foreground); }
 .orders-sequence-button:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; }
+.orders-quick-delete { align-self: start; width: 32px; height: 28px; color: var(--muted-foreground); }
+.orders-quick-delete:hover { color: var(--destructive); }
 .orders-entry-content { min-width: 0; }
 .orders-line-button { display: block; width: 100%; text-align: left; padding: 1px 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.8; color: var(--foreground); background: transparent; border: 0; cursor: pointer; }
 .orders-line-button:hover { background: var(--muted); }

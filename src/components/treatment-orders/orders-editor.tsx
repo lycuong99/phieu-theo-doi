@@ -35,7 +35,7 @@ export function OrdersEditor({ value, onChange, drugNames = [], label = 'Chỉ �
     publish([...editor.form.getValues('items'), item]);
     setSelected(item.id);
   };
-  const remove = (id: string) => { publish(editor.form.getValues('items').filter(item => item.id !== id)); setSelected(null); };
+  const remove = (id: string) => { publish(editor.form.getValues('items').filter(item => item.id !== id)); setSelected(current => current === id ? null : current); };
   const move = (id: string, offset: number) => {
     const next = [...editor.form.getValues('items')];
     const index = next.findIndex(item => item.id === id);
@@ -46,7 +46,7 @@ export function OrdersEditor({ value, onChange, drugNames = [], label = 'Chỉ �
   };
   return <div className="treatment-orders" aria-label={label} onBlur={field.onBlur}>
     <div className="orders-lines">
-      {items.length > 0 && <div className="orders-list-heading" aria-hidden="true"><span>STT</span><span>Nội dung chỉ định</span></div>}
+      {items.length > 0 && <div className="orders-list-heading" aria-hidden="true"><span>STT</span><span>Nội dung chỉ định</span><span /></div>}
       {items.map((item, index) => <div className="orders-entry" key={item.id}>
         <OrderSequenceField value={item.sequence ?? ''} position={index + 1} onChange={sequence => updateItem({ ...item, sequence })} />
         <div className="orders-entry-content">{selected === item.id ? <div className="orders-edit-panel">
@@ -65,6 +65,8 @@ export function OrdersEditor({ value, onChange, drugNames = [], label = 'Chỉ �
           <span>{orderHeading({ ...item, sequence: undefined }) || (item.kind === 'medication' ? 'Thuốc mới — bấm để nhập' : 'Chỉ định mới — bấm để nhập')}</span>
           {item.kind === 'medication' && medicationDetails(item).length > 0 && <span className="orders-relations">{medicationDetails(item).map((text, detailIndex) => <span key={detailIndex}>{text}</span>)}</span>}
         </button>}</div>
+        <Button type="button" variant="ghost" size="icon" className="orders-quick-delete"
+          aria-label={`Xóa dòng chỉ định ${index + 1}`} title="Xóa dòng" onClick={() => remove(item.id)}><Trash2 /></Button>
       </div>)}
       <div className="orders-add-actions">
         <Button type="button" variant="ghost" size="sm" onClick={() => add('medication')}><Plus data-icon="inline-start" />Thêm thuốc</Button>

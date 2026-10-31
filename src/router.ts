@@ -11,6 +11,6 @@ declare module '@tanstack/react-router' {
   }
 
   interface StaticDataRouteOption {
-    workspacePage?: 'episode' | 'defaults' | 'settings';
+    workspacePage?: 'episode' | 'defaults' | 'settings' | 'library';
   }
 }

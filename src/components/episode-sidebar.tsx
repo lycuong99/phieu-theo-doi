@@ -16,7 +16,7 @@ type Props = {
   onNew: () => Promise<boolean>;
   onSettings: () => void; settingsActive: boolean;
   onDefaults: () => void; defaultsActive:boolean;
-  onLibrary: () => void; onHelp: () => void;
+  libraryActive: boolean; onLibrary: () => void; onHelp: () => void;
 };
 
 export function EpisodeSidebar(props: Props) {
@@ -43,7 +43,7 @@ export function EpisodeSidebar(props: Props) {
       </button>)}
       {!results.length && <div className="episode-empty"><FolderHeart size={25}/><strong>{props.query ? 'Không tìm thấy đợt phù hợp' : 'Chưa có đợt trong danh sách này'}</strong><p>{props.query ? 'Thử tên, mã người bệnh hoặc số vào viện khác.' : 'Đổi bộ lọc hoặc tạo một đợt điều trị mới.'}</p>{props.query && <button onClick={() => props.onQuery('')}>Xóa tìm kiếm</button>}</div>}
     </nav>
-    <div className="episode-sidebar-footer"><button aria-current={props.settingsActive?'page':undefined} onClick={()=>{setDrawer(false);props.onSettings()}}><Settings2 size={16}/>Cấu hình Khoa</button><button aria-current={props.defaultsActive?'page':undefined} onClick={()=>{setDrawer(false);props.onDefaults()}}><Settings2 size={16}/>Mẫu chăm sóc</button><button onClick={() => { setDrawer(false); props.onLibrary(); }}><BookOpen size={16}/>Thư viện mẫu</button><button onClick={() => { setDrawer(false); props.onHelp(); }}><CircleHelp size={16}/>Cách sử dụng</button><div className={`episode-sync ${props.storageError ? 'has-error' : ''}`} role="status"><ShieldCheck size={15}/><span>{props.storageError ? 'Chưa lưu được nội dung' : props.saved && !props.recordId ? 'Mẫu trống, chưa tạo đợt' : props.saved ? (props.storage === 'cloud' ? 'Đã lưu trên Convex' : 'Đã lưu trên thiết bị') : 'Đang lưu nội dung…'}</span></div></div>
+    <div className="episode-sidebar-footer"><button aria-current={props.settingsActive?'page':undefined} onClick={()=>{setDrawer(false);props.onSettings()}}><Settings2 size={16}/>Cấu hình Khoa</button><button aria-current={props.defaultsActive?'page':undefined} onClick={()=>{setDrawer(false);props.onDefaults()}}><Settings2 size={16}/>Mẫu chăm sóc</button><button aria-current={props.libraryActive?'page':undefined} onClick={() => { setDrawer(false); props.onLibrary(); }}><BookOpen size={16}/>Thư viện mẫu</button><button onClick={() => { setDrawer(false); props.onHelp(); }}><CircleHelp size={16}/>Cách sử dụng</button><div className={`episode-sync ${props.storageError ? 'has-error' : ''}`} role="status"><ShieldCheck size={15}/><span>{props.storageError ? 'Chưa lưu được nội dung' : props.saved && !props.recordId ? 'Mẫu trống, chưa tạo đợt' : props.saved ? (props.storage === 'cloud' ? 'Đã lưu trên Convex' : 'Đã lưu trên thiết bị') : 'Đang lưu nội dung…'}</span></div></div>
   </>;
   return <>
     <aside className="episode-sidebar no-print">{content()}</aside>
