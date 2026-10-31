@@ -131,3 +131,14 @@ test('an adapter keeps its original department for reads and realtime subscripti
   assert.equal(stopped,true); assert.equal(snapshots.length,1);
   for(const call of calls) assert.equal(call.args.workspaceKey,'a'.repeat(64));
 });
+
+test('Convex template CRUD forwards structured contents, group and name without flattening', async () => {
+  const { services, calls } = setup({ exists: true });
+  const template = { id: 'orders-template', kind: 'orders', name: 'Bộ thử', group: 'Nhóm thử', text: 'Theo dõi', orders: { version: 1, items: [{ id: 'line', kind: 'text', sequence: '3', text: 'Theo dõi' }] } };
+  assert.deepEqual(await services.templates.create(template), template);
+  await services.templates.update(template.id, template);
+  const { id, ...input } = template;
+  const update = calls.find(call => call.name === 'templates:update');
+  assert.equal(update.args.id, id);
+  assert.deepEqual(update.args.input, input);
+});

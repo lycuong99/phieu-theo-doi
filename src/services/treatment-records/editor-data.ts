@@ -17,7 +17,7 @@ export async function persistTemplates(services: TreatmentServices, templates: D
   for (const template of templates) {
     const existing = current.find(item => item.id === template.id);
     if (!existing) await services.templates.create(template);
-    else if (existing.kind !== template.kind || existing.text !== template.text || existing.group !== template.group) {
+    else if (existing.kind !== template.kind || existing.text !== template.text || existing.group !== template.group || existing.name !== template.name || JSON.stringify(existing.orders) !== JSON.stringify(template.orders)) {
       await services.templates.update(template.id, template);
     }
   }

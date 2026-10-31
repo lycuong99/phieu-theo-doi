@@ -40,7 +40,7 @@ export const snapshot = query({
     return {
       revision: workspace.revision ?? 0,
       records: records.map(({ _id, _creationTime, workspaceKey, ...data }) => data),
-      templates: templates.map(({ id, kind, text, group }) => ({ id, kind, text, group })),
+      templates: templates.map(({ _id, _creationTime, workspaceKey: _workspaceKey, ...item }) => item),
     };
   },
 });

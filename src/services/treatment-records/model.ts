@@ -1,3 +1,4 @@
+import { validOrders } from '../../lib/treatment-orders';
 import { dayjs } from '../../lib/date';
 import { emptyCare, validForms, validTreatmentRows } from '../../forms/model';
 import type { Data, Patient, Template, TemplateKind, TreatmentRow } from '../../types';
@@ -31,7 +32,9 @@ function validPatient(value: unknown): value is Patient {
 export function validTemplates(value: unknown): value is Template[] {
   return Array.isArray(value) && value.every(item => object(item)
     && typeof item.id === 'string' && typeof item.text === 'string' && typeof item.group === 'string'
-    && (item.kind === 'progress' || item.kind === 'orders'))
+    && (item.kind === 'progress' || item.kind === 'orders')
+    && (item.name === undefined || typeof item.name === 'string')
+    && (item.orders === undefined || (item.kind === 'orders' && typeof item.name === 'string' && !!item.name.trim() && !!item.group.trim() && typeof item.orders !== 'string' && validOrders(item.orders))))
     && new Set(value.map(item => item.id)).size === value.length;
 }
 export function validData(value: unknown): value is Data {

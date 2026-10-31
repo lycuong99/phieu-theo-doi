@@ -86,9 +86,11 @@ pha/ghi chú và đổi thứ tự cũng cập nhật ngay. Liều, đơn vị, 
 tốc độ và đơn vị tốc độ ban đầu trống; không suy ra từ tên hoặc lịch dùng.
 
 `lib/treatment-orders.ts` giữ factories, validation, chuyển sang văn bản và
-nối các dòng cũ/mới. In và “Lưu mẫu” dùng chung `ordersText`; thư viện nội dung
-hiện vẫn là văn bản nên dùng lại mẫu sẽ thêm mục văn bản, không khôi phục
-cấu trúc thuốc. Sao chép ngày giữ cấu trúc và clone sâu cả hai buổi.
+nối các dòng cũ/mới. In dùng `ordersText`, bao gồm `sequence` thủ công nếu có.
+Mẫu chỉ định lưu tên, nhóm bệnh và cấu trúc `TreatmentOrdersV1`; khi áp dụng
+thêm vào cuối, cấp ID mới cho dòng/quan hệ và bỏ số thứ tự. Mẫu văn bản cũ
+được giữ nguyên thành mục văn bản, không tự phân tích thuốc. Tách số khỏi tên
+chỉ là đề nghị, cần người dùng xác nhận. Sao chép ngày giữ cấu trúc và clone sâu cả hai buổi.
 Backend cần triển khai validator tương thích trước frontend. Không cần sửa
 nội dung bản ghi cũ hàng loạt. Chưa triển khai thư viện thuốc bền vững hay
 quản lý kho; danh sách tên là dependency từ caller.

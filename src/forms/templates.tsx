@@ -52,7 +52,7 @@ export function TemplateLibrary({
   return (
     <>
       <div className="library-tabs">
-        {(["progress", "orders"] as Kind[]).map((value) => (
+        {(["progress"] as Kind[]).map((value) => (
           <button
             key={value}
             className={kind === value ? "selected" : ""}

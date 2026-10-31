@@ -1,3 +1,4 @@
+import { validTemplates } from '../src/services/treatment-records/model';
 import { ConvexError, v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { requireTemplate, requireWorkspace, checkedWorkspaceKey, bumpRevision, checkRevision } from './access';
@@ -10,7 +11,7 @@ export const list = query({
     await requireWorkspace(ctx, workspaceKey);
     const items = await ctx.db.query('templates')
       .withIndex('by_workspace', q => q.eq('workspaceKey', workspaceKey)).collect();
-    return items.map(({ id, kind, text, group }) => ({ id, kind, text, group }));
+    return items.map(({ _id, _creationTime, workspaceKey: _workspaceKey, ...item }) => item);
   },
 });
 export const create = mutation({
@@ -18,6 +19,7 @@ export const create = mutation({
   handler: async (ctx, { workspaceKey, template: item }) => {
     workspaceKey = checkedWorkspaceKey(workspaceKey);
     await requireWorkspace(ctx, workspaceKey);
+    if (!validTemplates([item])) throw new ConvexError('Nội dung mẫu không hợp lệ');
     const existing = await ctx.db.query('templates')
       .withIndex('by_workspace_id', q => q.eq('workspaceKey', workspaceKey).eq('id', item.id)).unique();
     if (existing) throw new ConvexError('Mã mẫu đã tồn tại');
@@ -31,6 +33,7 @@ export const update = mutation({
   handler: async (ctx, { workspaceKey, id, input }) => {
     workspaceKey = checkedWorkspaceKey(workspaceKey);
     const item = await requireTemplate(ctx, workspaceKey, id);
+    if (!validTemplates([{ ...item, ...input }])) throw new ConvexError('Nội dung mẫu không hợp lệ');
     await ctx.db.patch(item._id, input);
     return await bumpRevision(ctx, workspaceKey);
   },
@@ -50,6 +53,7 @@ export const replaceAll = mutation({
   handler: async (ctx, { workspaceKey, templates, expectedRevision }) => {
     workspaceKey = checkedWorkspaceKey(workspaceKey);
     await checkRevision(ctx, workspaceKey, expectedRevision);
+    if (!validTemplates(templates)) throw new ConvexError('Nội dung mẫu không hợp lệ');
     if (new Set(templates.map(item => item.id)).size !== templates.length) throw new ConvexError('Mã mẫu bị trùng');
     const current = await ctx.db.query('templates').withIndex('by_workspace', q => q.eq('workspaceKey', workspaceKey)).collect();
     const target = new Map(templates.map(item => [item.id, item]));

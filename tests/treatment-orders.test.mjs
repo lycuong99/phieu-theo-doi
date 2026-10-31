@@ -111,8 +111,63 @@ test('print includes dose, repetitions, mixing, rate and notes and escapes user 
   try {
     const orders = prescription();
     orders.items[0].relations[1].text = '<img src=x>';
+    orders.items[0].sequence = '3';
     const html = printForm(defaults().patient, [row('print', orders), row('pm', 'Chỉ định cũ', 'afternoon')]);
-    for (const expected of ['½ lọ ×4', 'Pha với:', '100 mL', 'XXX giọt/phút', 'Chỉ định cũ', '&lt;img src=x&gt;']) assert.ok(html.includes(expected), expected);
+    for (const expected of ['3. Thuốc thử', '½ lọ ×4', 'Pha với:', '100 mL', 'XXX giọt/phút', 'Chỉ định cũ', '&lt;img src=x&gt;']) assert.ok(html.includes(expected), expected);
     assert.ok(!html.includes('<img src=x>'));
   } finally { globalThis.document = previous; }
+});
+
+test('manual sequences print consistently without changing names or moving sequence values', async () => {
+  const { leadingOrderSequence } = await import('../src/lib/treatment-orders.ts');
+  const medication = { ...prescription().items[0], sequence: '3' };
+  const text = { id: 'other', kind: 'text', sequence: '7', text: 'Theo dõi' };
+  assert.match(ordersText({ version: 1, items: [medication, text] }), /^3\. Thuốc thử/);
+  assert.match(ordersText({ version: 1, items: [text, medication] }), /^7\. Theo dõi\n3\./);
+  assert.equal(ordersText({ version: 1, items: [{ ...text, sequence: '' }] }), 'Theo dõi');
+  assert.equal(validOrders({ version: 1, items: [{ ...text, sequence: 3 }] }), false);
+  assert.deepEqual(leadingOrderSequence('3.Bacque'), { sequence: '3', name: 'Bacque' });
+  assert.deepEqual(leadingOrderSequence(' 5) Vancomycin'), { sequence: '5', name: 'Vancomycin' });
+  assert.equal(leadingOrderSequence('3TC'), null);
+  assert.equal(leadingOrderSequence('500mg'), null);
+  assert.equal(leadingOrderSequence('0.9%'), null);
+  assert.equal(medication.name, 'Thuốc thử');
+});
+
+test('applying structured templates appends fresh independent rows and relations with no sequence', async () => {
+  const { appendOrderTemplate } = await import('../src/lib/treatment-orders.ts');
+  const source = prescription();
+  source.items[0].sequence = '5';
+  source.items.push({ id: 'text', kind: 'text', sequence: '6', text: 'Theo dõi' });
+  const before = structuredClone(source);
+  const first = appendOrderTemplate(source, source);
+  const second = appendOrderTemplate(first, source);
+  assert.equal(second.items.length, 6);
+  assert.deepEqual(second.items.slice(0, 2), source.items);
+  assert.equal(new Set(second.items.map(i => i.id)).size, 6);
+  assert.equal(new Set(second.items.filter(i => i.kind === 'medication').flatMap(i => i.relations.map(r => r.id))).size, 6);
+  assert.ok(second.items.slice(2).every(i => i.sequence === undefined));
+  second.items[2].relations[0].name = 'Edited';
+  second.items[2].rate.value = 'Edited';
+  assert.deepEqual(source, before);
+  assert.equal(appendOrderTemplate('', '  3. legacy\ntext  ').items[0].text, '  3. legacy\ntext  ');
+});
+
+test('structured order templates survive CRUD, edits and backup validation without losing legacy templates', async () => {
+  const { persistTemplates } = await import('../src/services/treatment-records/editor-data.ts');
+  const values = new Map();
+  const services = createLocalTreatmentServices(() => ({ getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) }));
+  const template = { id: 'structured', kind: 'orders', name: 'Bộ thử', group: 'Nhóm thử', text: ordersText(prescription()), orders: prescription() };
+  await services.templates.create(template);
+  assert.deepEqual((await services.templates.list()).find(t => t.id === template.id), template);
+  const changed = structuredClone(template);
+  changed.orders.items[0].sequence = '9';
+  await persistTemplates(services, [changed]);
+  assert.deepEqual(await services.templates.list(), [changed]);
+  const data = defaults();
+  data.templates.push(changed);
+  assert.deepEqual(parseData(JSON.parse(JSON.stringify(data))).templates, data.templates);
+  for (const patch of [{ name: '' }, { group: '' }, { orders: { version: 99, items: [] } }, { orders: 'text' }]) {
+    assert.throws(() => parseData({ ...data, templates: [{ ...template, ...patch }] }));
+  }
 });

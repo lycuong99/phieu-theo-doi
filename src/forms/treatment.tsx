@@ -1,5 +1,7 @@
+import { OrderTemplatePicker } from './order-templates';
+import type { SaveTemplateDraft } from './order-templates';
 import { OrdersEditor } from '../components/treatment-orders/orders-editor';
-import { appendOrdersText, ordersDocument, ordersText } from '../lib/treatment-orders';
+import { appendOrderTemplate, ordersDocument, ordersText } from '../lib/treatment-orders';
 import { useController, useForm } from "react-hook-form";
 import { useSynchronizedForm } from "./use-synchronized-form";
 import { useEffect, useRef, useState } from "react";
@@ -125,7 +127,7 @@ export function TreatmentForm({
   onChange: Dispatch<SetStateAction<Row[]>>;
   patient: Patient;
   templates: Template[];
-  onSaveTemplate: (value: { kind: Kind; text: string }) => void;
+  onSaveTemplate: (value: SaveTemplateDraft) => void;
   notify: (message: string) => void;
   saved: boolean;
   storageError: boolean;
@@ -560,7 +562,7 @@ function TreatmentSessionEditor({ activeDay, session, content, templates, drugNa
   templates: Template[];
   drugNames: readonly DrugName[];
   onChange: <K extends Kind>(kind: K, value: TreatmentContent[K]) => void;
-  onSaveTemplate: (value: { kind: Kind; text: string }) => void;
+  onSaveTemplate: (value: SaveTemplateDraft) => void;
 }) {
   const editor = useSynchronizedForm({ progress: content.progress }, (_name, value) => onChange('progress', value));
   return <div id="session-editor" role="tabpanel" aria-labelledby={`session-${session}`} className="daily-columns">
@@ -569,15 +571,12 @@ function TreatmentSessionEditor({ activeDay, session, content, templates, drugNa
       return <section className="daily-column" key={`${activeDay}-${session}-${kind}`}>
         <div className="daily-column-title"><FileText size={17} /><h3>{labels[kind]}</h3></div>
         <div className="daily-tools">
-          <Picker kind={kind} templates={templates.filter(template => template.kind === kind)} onSelect={selected => {
-            if (kind === 'orders') onChange('orders', appendOrdersText(content.orders, selected));
-            else {
+          {kind === 'orders' ? <OrderTemplatePicker templates={templates} onSelect={template => onChange('orders', appendOrderTemplate(content.orders, template.orders ?? template.text))} /> : <Picker kind={kind} templates={templates.filter(template => template.kind === kind)} onSelect={selected => {
               const current = editor.form.getValues('progress');
               editor.change('progress', `${current.trim()}${current.trim() ? "\n" : ""}${selected}`);
-            }
-          }} />
-          <Button size="sm" variant="ghost" disabled={!text.trim()} onClick={() => onSaveTemplate({ kind, text })}>
-            <LayoutTemplate data-icon="inline-start" />Lưu mẫu
+          }} />}
+          <Button size="sm" variant="ghost" disabled={!text.trim()} onClick={() => onSaveTemplate({ kind, text, ...(kind === 'orders' ? { orders: content.orders } : {}) })}>
+            <LayoutTemplate data-icon="inline-start" />{kind === 'orders' ? 'Lưu mẫu chỉ định' : 'Lưu mẫu'}
           </Button>
         </div>
         {kind === 'orders' ? <OrdersEditor value={content.orders} onChange={value => onChange('orders', value)} drugNames={drugNames}

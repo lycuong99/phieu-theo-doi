@@ -8,17 +8,18 @@ const orderRelation = v.union(
   v.object({ id: v.string(), kind: v.literal('mix'), name: v.string(), amount: v.string(), unit: v.string() }),
   v.object({ id: v.string(), kind: v.literal('note'), text: v.string() }),
 );
-export const treatmentOrders = v.union(v.string(), v.object({
+export const structuredOrders = v.object({
   version: v.literal(1),
   items: v.array(v.union(
-    v.object({ id: v.string(), kind: v.literal('text'), text: v.string() }),
+    v.object({ id: v.string(), kind: v.literal('text'), sequence: v.optional(v.string()), text: v.string() }),
     v.object({
-      id: v.string(), kind: v.literal('medication'), name: v.string(), strength: v.string(),
+      id: v.string(), kind: v.literal('medication'), sequence: v.optional(v.string()), name: v.string(), strength: v.string(),
       dose: v.string(), unit: v.string(), repeat: v.string(), route: v.string(), timing: v.string(), marker: v.string(),
       rate: v.object({ value: v.string(), unit: v.string() }), relations: v.array(orderRelation),
     }),
   )),
-}));
+});
+export const treatmentOrders = v.union(v.string(), structuredOrders);
 export const row = v.object({
   id: v.string(), time: v.string(), progress: v.string(), orders: treatmentOrders,
   session: v.optional(v.union(v.literal('morning'), v.literal('afternoon'))),
@@ -45,9 +46,9 @@ export const recordPatch = v.object({
   status: recordFields.status, startedOn: recordFields.startedOn, endedOn: recordFields.endedOn,
 });
 export const templateFields = {
-  kind: v.union(v.literal('progress'), v.literal('orders')), text: v.string(), group: v.string(),
+  kind: v.union(v.literal('progress'), v.literal('orders')), text: v.string(), group: v.string(), name: v.optional(v.string()), orders: v.optional(structuredOrders),
 };
 export const template = v.object({ id: v.string(), ...templateFields });
 export const templatePatch = v.object({
-  kind: v.optional(templateFields.kind), text: v.optional(v.string()), group: v.optional(v.string()),
+  name: v.optional(v.string()), orders: v.optional(structuredOrders), kind: v.optional(templateFields.kind), text: v.optional(v.string()), group: v.optional(v.string()),
 });

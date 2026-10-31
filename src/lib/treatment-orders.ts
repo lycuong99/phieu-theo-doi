@@ -15,9 +15,10 @@ export function relationText(relation: OrderRelation): string {
     : `Pha với: ${[relation.name, relation.amount && `${relation.amount} ${relation.unit}`.trim()].filter(Boolean).join(' · ')}`;
 }
 export function orderHeading(order: TreatmentOrder): string {
-  return order.kind === 'text' ? order.text : [order.marker, order.name, order.strength,
+  const heading = order.kind === 'text' ? order.text : [order.marker, order.name, order.strength,
     order.dose && `${order.dose} ${order.unit}`.trim(), order.repeat && `×${order.repeat}`,
     order.route, order.timing].filter(Boolean).join(' ');
+  return order.sequence?.trim() ? `${order.sequence.trim()}. ${heading}` : heading;
 }
 export function medicationDetails(order: MedicationOrder): string[] {
   return [...order.relations.map(relationText), ...(order.rate.value.trim()
@@ -57,7 +58,7 @@ function validRelation(value: unknown): value is OrderRelation {
     ? typeof value.text === 'string' : value.kind === 'mix' && strings(value, ['name', 'amount', 'unit']));
 }
 export function validOrder(value: unknown): value is TreatmentOrder {
-  if (!object(value) || typeof value.id !== 'string') return false;
+  if (!object(value) || typeof value.id !== 'string' || (value.sequence !== undefined && typeof value.sequence !== 'string')) return false;
   if (value.kind === 'text') return typeof value.text === 'string';
   return value.kind === 'medication' && strings(value, ['name', 'strength', 'dose', 'unit', 'repeat', 'route', 'timing', 'marker'])
     && object(value.rate) && strings(value.rate, ['value', 'unit'])
@@ -67,4 +68,18 @@ export function validOrder(value: unknown): value is TreatmentOrder {
 export function validOrders(value: unknown): value is TreatmentOrders {
   return typeof value === 'string' || object(value) && value.version === 1
     && Array.isArray(value.items) && value.items.every(validOrder) && unique(value.items);
+}
+
+/** Explicit suggestion only: never mutate names while reading or typing. */
+export function leadingOrderSequence(name: string): { sequence: string; name: string } | null {
+  const match = name.match(/^\s*(\d+)[.)]\s*([^\d\s][\s\S]*)$/);
+  return match ? { sequence: match[1], name: match[2] } : null;
+}
+export function appendOrderTemplate(current: TreatmentOrders, template: TreatmentOrders): TreatmentOrdersV1 {
+  const items = ordersDocument(template).items.map(item => {
+    const { sequence: _sequence, ...rest } = item;
+    return { ...rest, id: crypto.randomUUID(), ...(item.kind === 'medication'
+      ? { rate: { ...item.rate }, relations: item.relations.map(relation => ({ ...relation, id: crypto.randomUUID() })) } : {}) };
+  });
+  return { version: 1, items: [...ordersDocument(current).items, ...items] };
 }

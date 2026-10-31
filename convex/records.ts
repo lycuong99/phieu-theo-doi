@@ -1,3 +1,4 @@
+import { validTemplates } from '../src/services/treatment-records/model';
 import { ConvexError, v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { requireRecord, requireWorkspace, checkedWorkspaceKey, bumpRevision, checkRevision } from './access';
@@ -81,12 +82,13 @@ export const saveEditor = mutation({
     });
     const current = await ctx.db.query('templates')
       .withIndex('by_workspace', q => q.eq('workspaceKey', workspaceKey)).collect();
+    if (!validTemplates(templates)) throw new ConvexError('Nội dung mẫu không hợp lệ');
     const target = new Map(templates.map(value => [value.id, value]));
     for (const previous of current) {
       const next = target.get(previous.id);
       if (!next) await ctx.db.delete(previous._id);
       else {
-        if (next.kind !== previous.kind || next.text !== previous.text || next.group !== previous.group) {
+        if (next.kind !== previous.kind || next.text !== previous.text || next.group !== previous.group || next.name !== previous.name || JSON.stringify(next.orders) !== JSON.stringify(previous.orders)) {
           await ctx.db.patch(previous._id, next);
         }
         target.delete(previous.id);

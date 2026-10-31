@@ -2,7 +2,7 @@ import { useId, useState } from 'react';
 import { useController } from 'react-hook-form';
 import { ArrowDown, ArrowUp, Check, ChevronDown, Plus, Trash2, X } from 'lucide-react';
 import type { DrugName, MedicationOrder, OrderRelation, TreatmentOrder, TreatmentOrders, TreatmentOrdersV1 } from '@/types';
-import { makeMedicationOrder, makeOrderRelation, makeTextOrder, medicationDetails, orderHeading, ordersDocument, ordersText } from '@/lib/treatment-orders';
+import { leadingOrderSequence, makeMedicationOrder, makeOrderRelation, makeTextOrder, medicationDetails, orderHeading, ordersDocument, ordersText } from '@/lib/treatment-orders';
 import { patchFormValue } from '@/forms/form-values';
 import { useSynchronizedForm } from '@/forms/use-synchronized-form';
 import { Button } from '@/components/ui/button';
@@ -46,8 +46,10 @@ export function OrdersEditor({ value, onChange, drugNames = [], label = 'Chỉ �
   };
   return <div className="treatment-orders" aria-label={label} onBlur={field.onBlur}>
     <div className="orders-lines">
+      {items.length > 0 && <div className="orders-list-heading" aria-hidden="true"><span>STT</span><span>Nội dung chỉ định</span></div>}
       {items.map((item, index) => <div className="orders-entry" key={item.id}>
-        {selected === item.id ? <div className="orders-edit-panel">
+        <OrderSequenceField value={item.sequence ?? ''} position={index + 1} onChange={sequence => updateItem({ ...item, sequence })} />
+        <div className="orders-entry-content">{selected === item.id ? <div className="orders-edit-panel">
           <div className="orders-edit-heading"><strong>{item.kind === 'medication' ? 'Thuốc' : 'Chỉ định khác'}</strong><div className="flex gap-1">
             <Button type="button" variant="ghost" size="icon" aria-label="Di chuyển chỉ định lên" disabled={index === 0} onClick={() => move(item.id, -1)}><ArrowUp /></Button>
             <Button type="button" variant="ghost" size="icon" aria-label="Di chuyển chỉ định xuống" disabled={index === items.length - 1} onClick={() => move(item.id, 1)}><ArrowDown /></Button>
@@ -60,9 +62,9 @@ export function OrdersEditor({ value, onChange, drugNames = [], label = 'Chỉ �
             <Button type="button" size="sm" variant="outline" onClick={() => setSelected(null)}><Check data-icon="inline-start" />Xong</Button>
           </div>
         </div> : <button type="button" className="orders-line-button" onClick={() => setSelected(item.id)} aria-label={`Sửa chỉ định ${index + 1}: ${orderHeading(item) || 'Chưa nhập nội dung'}`}>
-          <span>{orderHeading(item) || (item.kind === 'medication' ? 'Thuốc mới — bấm để nhập' : 'Chỉ định mới — bấm để nhập')}</span>
+          <span>{orderHeading({ ...item, sequence: undefined }) || (item.kind === 'medication' ? 'Thuốc mới — bấm để nhập' : 'Chỉ định mới — bấm để nhập')}</span>
           {item.kind === 'medication' && medicationDetails(item).length > 0 && <span className="orders-relations">{medicationDetails(item).map((text, detailIndex) => <span key={detailIndex}>{text}</span>)}</span>}
-        </button>}
+        </button>}</div>
       </div>)}
       <div className="orders-add-actions">
         <Button type="button" variant="ghost" size="sm" onClick={() => add('medication')}><Plus data-icon="inline-start" />Thêm thuốc</Button>
@@ -71,6 +73,23 @@ export function OrdersEditor({ value, onChange, drugNames = [], label = 'Chỉ �
     </div>
     <div className="daily-column-footer"><span>{ordersText({ version: 1, items }).length} ký tự</span><span>Bấm vào dòng để sửa</span></div>
   </div>;
+}
+
+/** Row metadata stays visible independently of the clinical content editor. */
+function OrderSequenceField({ value, position, onChange }: { value: string; position: number; onChange: (value: string) => void }) {
+  const id = useId();
+  const [editing, setEditing] = useState(false);
+  if (!editing) return <button type="button" className="orders-sequence-button"
+    aria-label={`Sửa số thứ tự dòng ${position}${value.trim() ? `: ${value.trim()}` : ': chưa có số'}`}
+    title="Bấm để sửa số thứ tự" onClick={() => setEditing(true)}>{value.trim() || '—'}</button>;
+  return <Field className="orders-sequence-field">
+    <FieldLabel className="sr-only" htmlFor={id}>Số thứ tự dòng {position}</FieldLabel>
+    <Input density="compact" id={id} aria-label={`Số thứ tự dòng ${position}`} value={value}
+      autoFocus onFocus={event => event.currentTarget.select()} onChange={event => onChange(event.target.value)}
+      onBlur={() => setEditing(false)} onKeyDown={event => {
+        if (event.key === 'Enter' || event.key === 'Escape') { event.preventDefault(); setEditing(false); }
+      }} placeholder="—" autoComplete="off" />
+  </Field>;
 }
 
 function TextOrderField({ value, onChange }: { value: string; onChange: (text: string) => void }) {
@@ -92,12 +111,14 @@ function ChoiceField({ label, value, options, onChange }: { label: string; value
 
 function MedicationFields({ value, onChange, drugNames }: { value: MedicationOrder; onChange: (item: MedicationOrder) => void; drugNames: readonly DrugName[] }) {
   const nameId = useId();
+  const suggestion = leadingOrderSequence(value.name);
   const [showMarker, setShowMarker] = useState(false);
   const patch = (change: Partial<MedicationOrder>) => onChange({ ...value, ...change });
   const updateRelation = (relation: OrderRelation) => patch({ relations: value.relations.map(old => old.id === relation.id ? relation : old) });
   return <div className="orders-medication-fields">
     <FieldGroup className="orders-identity-fields">
-      <Field><FieldLabel density="compact" htmlFor={nameId}>Tên thuốc</FieldLabel><DrugNameInput id={nameId} names={drugNames} value={value.name} onChange={name => patch({ name })} /></Field>
+      <Field><FieldLabel density="compact" htmlFor={nameId}>Tên thuốc</FieldLabel><DrugNameInput id={nameId} names={drugNames} value={value.name} onChange={name => patch({ name })} /><p className="text-xs text-muted-foreground">Chỉ nhập tên thuốc, không nhập số thứ tự</p>
+      {suggestion && <Button type="button" variant="outline" size="sm" onClick={() => patch(suggestion)}>Chuyển sang ô số thứ tự{value.sequence ? ` (thay ${value.sequence})` : ''}</Button>}</Field>
       <TextField label="Hàm lượng" value={value.strength} onChange={strength => patch({ strength })} placeholder="VD: 10 mg" />
     </FieldGroup>
     <FieldGroup className="orders-dose-fields">

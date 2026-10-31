@@ -90,8 +90,8 @@ export function createConvexTreatmentServices(
         return client.mutation(api.templates.create, { workspaceKey: await ready(), template });
       },
       async update(id, input) {
-        const { kind, text, group } = input;
-        await client.mutation(api.templates.update, { workspaceKey: await ready(), id, input: { kind, text, group } });
+        const { kind, text, group, name, orders } = input;
+        await client.mutation(api.templates.update, { workspaceKey: await ready(), id, input: { kind, text, group, name, orders } });
       },
       async remove(id) { await client.mutation(api.templates.remove, { workspaceKey: await ready(), id }); },
     },

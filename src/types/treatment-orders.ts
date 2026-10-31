@@ -8,6 +8,7 @@ export type OrderRelation =
 export type MedicationOrder = {
   id: string;
   kind: 'medication';
+  sequence?: string;
   name: string;
   strength: string;
   dose: string;
@@ -19,7 +20,7 @@ export type MedicationOrder = {
   rate: { value: string; unit: string };
   relations: OrderRelation[];
 };
-export type TextOrder = { id: string; kind: 'text'; text: string };
+export type TextOrder = { id: string; kind: 'text'; sequence?: string; text: string };
 export type TreatmentOrder = MedicationOrder | TextOrder;
 
 /** Version belongs to the orders document, independently of the episode backup version. */
